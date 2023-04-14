@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from datetime import datetime
 import json
 import sqlite3
@@ -129,6 +129,10 @@ def get_produto_by_id(id):
         return jsonify(dict(produto))
     else:
         return jsonify({'status': 'erro', 'mensagem': 'Produto não encontrado'})
+
+@app.route('/imagens/<path:path>')
+def send_image(path):
+    return send_from_directory(os.path.join(app.root_path, 'imagens'), path)
 
 if __name__ == '__main__':
     app.run()
