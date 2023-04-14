@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Produtos</title>
+</head>
+
+<body>
+    <h1>Produtos</h1>
+    <div id="mensagem"></div>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Preço</th>
+                <th>Data de Cadastro</th>
+                <th>Data de Validade</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="produtos-list"></tbody>
+    </table>
+    <hr>
+    <h2>Adicionar Produto</h2>
+    <form>
+        <label>Nome:</label>
+        <input type="text" id="nome" required>
+        <br>
+        <label>Descrição:</label>
+        <input type="text" id="descricao">
+        <br>
+        <label>Preço:</label>
+        <input type="number" step="0.01" id="preco" required>
+        <br>
+        <label>Data de Validade:</label>
+        <input type="date" id="data_validade">
+        <br>
+        <button type="submit" id="add-produto">Adicionar Produto</button>
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function exibirProdutos(produtos) {
+            var html = '';
+            if (produtos.status == 'erro') {
+                $('#mensagem').html('<h1>' + produtos.mensagem + '</h1>')
+            }
+            else {
+                for (var i = 0; i < produtos.length; i++) {
+                    html += '<tr>';
+                    html += '<td>' + produtos[i].id + '</td>';
+                    html += '<td>' + produtos[i].nome + '</td>';
+                    html += '<td>' + produtos[i].descricao + '</td>';
+                    html += '<td>' + produtos[i].preco + '</td>';
+                    html += '<td>' + produtos[i].data_cadastro + '</td>';
+                    html += '<td>' + produtos[i].data_validade + '</td>';
+                    html += '<td>';
+                    html += '<button class="edit" data-id="' + produtos[i].id + '">Editar</button>';
+                    html += '<button class="delete" data-id="' + produtos[i].id + '">Deletar</button>';
+                    html += '</td>';
+                    html += '</tr>';
+                }
+                $('#produtos-list').html(html);
+            }
+        }
+
+        $('#add-produto').click(function(e){
+            e.preventDefault()
+            var nome = $('#nome').val()
+            var descricao = $('#descricao').val()
+            var preco = $('#preco').val()
+            var data_validade = $('#data_validade').val()
+            $.ajax({
+                url: 'api/add-produtos',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({nome: nome, descricao:descricao, preco:preco, data_validade:data_validade}),
+                success: function(response){
+                    console.log('add', response)
+                    exibirProdutos(response)
+                    location.reload()
+                }
+            })
+        })
+
+
+        $(function () {
+            $.ajax({
+                url: 'api/produtos',
+                method: 'GET',
+                success: function (response) {
+                    console.log('get produtos',response)
+                    exibirProdutos(response)
+                }
+            })
+        })
+    </script>
