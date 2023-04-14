@@ -64,8 +64,6 @@ def get_produtos():
 @app.route('/api/add-produtos', methods=['POST'])
 def add_produtos():
 
-    if request.content_type != 'multipart/form-data':
-        return jsonify({'status': 'erro', 'mensagem': 'Ocorreu um erro'})
     nome = request.form['nome']
     descricao = request.form['descricao']
     preco = request.form['preco']
@@ -75,9 +73,14 @@ def add_produtos():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("INSERT INTO produtos (nome, descricao, preco, data_cadastro, data_validade) VALUES (?, ?, ?, ?, ?)",(nome, descricao, preco, data_cadastro, data_validade))
+    rows = cursor.rowcount
     conn.commit()
     conn.close()
-    return jsonify({'status': 'sucesso', 'mensagem': 'Produto cadastrado com sucesso!'})
+
+    if rows == 1:
+        return jsonify({'status': 'sucesso', 'mensagem': 'Produto cadastrado com sucesso!'})
+    else:
+        return jsonify({'status': 'erro', 'mensagem': 'Ocorreu um erro ao cadastrar!'})
 
 #ROTA PARA ATUALIZAR UM PRODUTO
 #PERCEBE QUE AQUI NA ATUALIZAÇÃO E A MESMA COISA DO POST (INSERIR) SO VAI MUDAR O QUERY DO SQL
