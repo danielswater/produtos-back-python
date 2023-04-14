@@ -3,6 +3,7 @@ from datetime import datetime
 import json
 import sqlite3
 from flask_cors import CORS
+import os
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -69,10 +70,17 @@ def add_produtos():
     preco = request.form['preco']
     data_cadastro = datetime.now().strftime('%Y-%m-%d')
     data_validade = request.form['data_validade']
+    imagem = request.files['imagem']
+    upload_dir = os.path.join(app.root_path, './imagens')
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir)
+    filename = f"{datetime.now().strftime('%Y%m%d%H%M%S%f')}.jpg"
+    filepath = os.path.join(upload_dir, filename)
+    imagem.save(filepath)
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO produtos (nome, descricao, preco, data_cadastro, data_validade) VALUES (?, ?, ?, ?, ?)",(nome, descricao, preco, data_cadastro, data_validade))
+    cursor.execute("INSERT INTO produtos (nome, descricao, preco, data_cadastro, data_validade, imagem) VALUES (?, ?, ?, ?, ?, ?)",(nome, descricao, preco, data_cadastro, data_validade, filename))
     rows = cursor.rowcount
     conn.commit()
     conn.close()
