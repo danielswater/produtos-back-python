@@ -130,11 +130,13 @@ def delete_produtos(id):
 def get_produto_by_id(id):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM produtos WHERE id=?",(id))
+    cursor.execute("SELECT * FROM produtos WHERE id=?",(id,))
     produto = cursor.fetchone()
     conn.close()
     if produto:
-        return jsonify(dict(produto))
+        # produto_dict = {'id': produto[0], 'nome': produto[1], 'preco': produto[2], 'data_cadastro': produto[3], 'data_vencimento': produto[4], 'imagem': produto[5]}
+        produto_dict = {'id': produto[0], 'nome': produto[1], 'descricao': produto[2], 'preco': produto[3], 'data_cadastro': produto[4], 'data_validade': produto[5], 'imagem':produto[6]}
+        return jsonify(dict(produto_dict))
     else:
         return jsonify({'status': 'erro', 'mensagem': 'Produto não encontrado'})
 
