@@ -95,18 +95,22 @@ def add_produtos():
 #VEJA TAMBEM QUE NA ROTA VAMOS PASSAR O ID DO PROTUDO
 @app.route('/api/update-produtos/<int:id>', methods=['PUT'])
 def update_produtos(id):
-    data = request.get_json()
-    nome = data['nome']
-    descricao = data['descricao']
-    preco = data['preco']
-    data_cadastro = data['data_cadastro']
-    data_validade = data['data_validade']
+    
+    nome = request.form['nome']
+    descricao = request.form['descricao']
+    preco = request.form['preco']
+    data_cadastro = request.form['data_cadastro']
+    data_validade = request.form['data_validade']
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("UPDATE produtos SET nome=?, descricao=?, preco=?, data_cadastro=?, data_validade=? WHERE id=?",(nome, descricao, preco, data_cadastro, data_validade, id))
+    rows = cursor.rowcount
     conn.commit()
     conn.close()
-    return jsonify({'status': 'sucesso', 'mensagem': 'Produto atualizado com sucesso!'})
+    if rows == 1:
+        return jsonify({'status': 'sucesso', 'mensagem': 'Produto atualizado com sucesso!'})
+    else:
+        return jsonify({'status': 'erro', 'mensagem': 'Ocorreu um erro ao atualizar o produto!'})
 
 #ROTA PRA DELETAR UM PRODUTO, TAMBEM VAMOS PASSAR O ID DO PRODUTO
 @app.route('/api/delete-produtos/<int:id>', methods=['DELETE'])
@@ -114,9 +118,13 @@ def delete_produtos(id):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("DELETE FROM produtos WHERE id=?",(id))
+    rows = cursor.rowcount
     conn.commit()
     conn.close()
-    return jsonify({'status': 'sucesso', 'mensagem': 'Produto deletado com sucesso'})
+    if rows == 1:
+        return jsonify({'status': 'sucesso', 'mensagem': 'Produto deletado com sucesso'})
+    else:
+        return jsonify({'status': 'erro', 'mensagem': 'Ocorreu um erro ao deletar o produto'})
 
 @app.route('/api/detalhe-produto/<int:id>', methods=['GET'])
 def get_produto_by_id(id):
