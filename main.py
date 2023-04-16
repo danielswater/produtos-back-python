@@ -95,15 +95,25 @@ def add_produtos():
 #VEJA TAMBEM QUE NA ROTA VAMOS PASSAR O ID DO PROTUDO
 @app.route('/api/update-produtos/<int:id>', methods=['PUT'])
 def update_produtos(id):
-    
     nome = request.form['nome']
     descricao = request.form['descricao']
     preco = request.form['preco']
     data_cadastro = request.form['data_cadastro']
     data_validade = request.form['data_validade']
+    imagem = request.files.get('imagem', None) # Adiciona o valor padrão None para a imagem
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("UPDATE produtos SET nome=?, descricao=?, preco=?, data_cadastro=?, data_validade=? WHERE id=?",(nome, descricao, preco, data_cadastro, data_validade, id))
+    if imagem is None: # Verifica se a imagem não foi enviada
+        produto = get_produto_by_id(id) # Busca o produto correspondente
+        filename = produto['imagem'] # Obtém o nome do arquivo da imagem correspondente
+    else:
+        upload_dir = os.path.join(app.root_path, './imagens')
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+        filename = f"{datetime.now().strftime('%Y%m%d%H%M%S%f')}.jpg"
+        filepath = os.path.join(upload_dir, filename)
+        imagem.save(filepath)
+    cursor.execute("UPDATE produtos SET nome=?, descricao=?, preco=?, data_cadastro=?, data_validade=?, imagem=? WHERE id=?",(nome, descricao, preco, data_cadastro, data_validade, filename, id,))
     rows = cursor.rowcount
     conn.commit()
     conn.close()
@@ -111,6 +121,7 @@ def update_produtos(id):
         return jsonify({'status': 'sucesso', 'mensagem': 'Produto atualizado com sucesso!'})
     else:
         return jsonify({'status': 'erro', 'mensagem': 'Ocorreu um erro ao atualizar o produto!'})
+
 
 #ROTA PRA DELETAR UM PRODUTO, TAMBEM VAMOS PASSAR O ID DO PRODUTO
 @app.route('/api/delete-produtos/<int:id>', methods=['DELETE'])
@@ -136,9 +147,9 @@ def get_produto_by_id(id):
     if produto:
         # produto_dict = {'id': produto[0], 'nome': produto[1], 'preco': produto[2], 'data_cadastro': produto[3], 'data_vencimento': produto[4], 'imagem': produto[5]}
         produto_dict = {'id': produto[0], 'nome': produto[1], 'descricao': produto[2], 'preco': produto[3], 'data_cadastro': produto[4], 'data_validade': produto[5], 'imagem':produto[6]}
-        return jsonify(dict(produto_dict))
+        return produto_dict
     else:
-        return jsonify({'status': 'erro', 'mensagem': 'Produto não encontrado'})
+        return None
 
 @app.route('/imagens/<path:path>')
 def send_image(path):
