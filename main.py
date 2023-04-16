@@ -131,7 +131,7 @@ def update_produtos(id):
 def delete_produtos(id):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM produtos WHERE id=?",(id))
+    cursor.execute("DELETE FROM produtos WHERE id=?",(id,))
     rows = cursor.rowcount
     conn.commit()
     conn.close()
