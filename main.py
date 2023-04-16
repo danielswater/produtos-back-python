@@ -70,13 +70,16 @@ def add_produtos():
     preco = request.form['preco']
     data_cadastro = datetime.now().strftime('%Y-%m-%d')
     data_validade = request.form['data_validade']
-    imagem = request.files['imagem']
-    upload_dir = os.path.join(app.root_path, './imagens')
-    if not os.path.exists(upload_dir):
-        os.makedirs(upload_dir)
-    filename = f"{datetime.now().strftime('%Y%m%d%H%M%S%f')}.jpg"
-    filepath = os.path.join(upload_dir, filename)
-    imagem.save(filepath)
+    imagem = request.files.get('imagem')
+    if not imagem:
+        filename = "no_image.png"
+    else:
+        upload_dir = os.path.join(app.root_path, './imagens')
+        if not os.path.exists(upload_dir):
+            os.makedirs(upload_dir)
+        filename = f"{datetime.now().strftime('%Y%m%d%H%M%S%f')}.jpg"
+        filepath = os.path.join(upload_dir, filename)
+        imagem.save(filepath)
 
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -100,12 +103,12 @@ def update_produtos(id):
     preco = request.form['preco']
     data_cadastro = request.form['data_cadastro']
     data_validade = request.form['data_validade']
-    imagem = request.files.get('imagem', None) # Adiciona o valor padrão None para a imagem
+    imagem = request.files.get('imagem', None)
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    if imagem is None: # Verifica se a imagem não foi enviada
-        produto = get_produto_by_id(id) # Busca o produto correspondente
-        filename = produto['imagem'] # Obtém o nome do arquivo da imagem correspondente
+    if imagem is None: 
+        produto = get_produto_by_id(id)
+        filename = produto['imagem']
     else:
         upload_dir = os.path.join(app.root_path, './imagens')
         if not os.path.exists(upload_dir):
